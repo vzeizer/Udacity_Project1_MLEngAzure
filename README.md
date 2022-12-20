@@ -13,7 +13,6 @@ This model is then compared to an Azure AutoML run.
 
 
 ## Summary
-**In 1-2 sentences, explain the problem statement: e.g "This dataset contains data about... we seek to predict..."**
 
 The dataset investigated [here](https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv) consists of investigating a bank marketing problem and predict if the client subscribed a term deposit (classification problem).
 
@@ -54,13 +53,53 @@ Input variables:
 
 
 
-**In 1-2 sentences, explain the solution: e.g. "The best performing model was a ..."**
 
-We have run an AutoML run as well as a Logistic Regression algorithm with regularization to find the optimal model that can predict the...
+We have run an AutoML run as well as a Logistic Regression algorithm with regularization to find the optimal model that can predict whether the client has subscribed a term deposit.
 
-The best performing model was ...
+The best performing model was found through AutoML, whose model is the following:
+**
+Pipeline(memory=None,
+         steps=[('datatransformer',
+                 DataTransformer(enable_dnn=False, enable_feature_sweeping=True, 
+                 feature_sweeping_config={}, feature_sweeping_timeout=86400, 
+                 featurization_config=None, force_text_dnn=False, is_cross_validation=True, 
+                 is_onnx_compatible=False, observer=None, task='classification', 
+                 working_dir='/mnt/batch/tasks/shared/LS_root/mount...
+                 PreFittedSoftVotingClassifier(classification_labels=array([0, 1]), 
+                 estimators=[('0', Pipeline(memory=None, steps=[('maxabsscaler', MaxAbsScaler(copy=True)), 
+                 ('lightgbmclassifier', 
+                 LightGBMClassifier(min_data_in_leaf=20, n_jobs=1, problem_info=ProblemInfo(gpu_training_param_dict={'processing_unit_type': 'cpu'}), 
+                 random_state=None))], verbose=False)), 
+                 ('24', Pipeline(memory=None, steps=[('standardscalerwrapper', StandardScalerWrapper(copy=True, with_mean=False, with_std=False)), 
+                 ('xgboostclassifier', XGBoostClassifier(booster='gbtree', colsample_bytree=1, eta=0.05, gamma=0, max_depth=6, max_leaves=0, 
+                 n_estimators=200, n_jobs=1, objective='reg:logistic', problem_info=ProblemInfo(gpu_training_param_dict={'processing_unit_type': 'cpu'}), 
+                 random_state=0, reg_alpha=0.625, reg_lambda=0.8333333333333334, subsample=0.8, 
+                 tree_method='auto'))], verbose=False)), 
+                 ('1', Pipeline(memory=None, steps=[('maxabsscaler', MaxAbsScaler(copy=True)), 
+                 ('xgboostclassifier', XGBoostClassifier(n_jobs=1, problem_info=ProblemInfo(gpu_training_param_dict={'processing_unit_type': 'cpu'}), 
+                 random_state=0, tree_method='auto'))], verbose=False)), 
+                 ('21', Pipeline(memory=None, steps=[('standardscalerwrapper', StandardScalerWrapper(copy=True, with_mean=False, with_std=False)), 
+                 ('xgboostclassifier', XGBoostClassifier(booster='gbtree', colsample_bytree=0.5, eta=0.2, gamma=0, max_depth=7, max_leaves=7, 
+                 n_estimators=25, n_jobs=1, objective='reg:logistic', 
+                 problem_info=ProblemInfo(gpu_training_param_dict={'processing_unit_type': 'cpu'}), 
+                 random_state=0, reg_alpha=0, reg_lambda=0.20833333333333334, subsample=1, tree_method='auto'))], verbose=False)), 
+                 ('18', Pipeline(memory=None, steps=[('standardscalerwrapper', StandardScalerWrapper(copy=True, with_mean=False, with_std=False)), 
+                 ('xgboostclassifier', XGBoostClassifier(booster='gbtree', colsample_bytree=0.7, eta=0.1, gamma=0.1, 
+                 max_depth=9, max_leaves=511, n_estimators=25, n_jobs=1, objective='reg:logistic', problem_info=ProblemInfo(gpu_training_param_dict={'processing_unit_type': 'cpu'}), 
+                 random_state=0, reg_alpha=0, reg_lambda=1.7708333333333335, subsample=0.9, tree_method='auto'))], verbose=False)), 
+                 ('14', Pipeline(memory=None, steps=[('standardscalerwrapper', StandardScalerWrapper(copy=True, with_mean=False, with_std=False)), 
+                 ('xgboostclassifier', XGBoostClassifier(booster='gbtree', colsample_bytree=1, eta=0.3, gamma=0, max_depth=10, max_leaves=511, 
+                 n_estimators=10, n_jobs=1, objective='reg:logistic', problem_info=ProblemInfo(gpu_training_param_dict={'processing_unit_type': 'cpu'}), 
+                 random_state=0, reg_alpha=2.1875, reg_lambda=0.4166666666666667, subsample=0.5, tree_method='auto'))], verbose=False)), 
+                 ('16', Pipeline(memory=None, steps=[('standardscalerwrapper', StandardScalerWrapper(copy=True, with_mean=False, with_std=False)), 
+                 ('logisticregression', LogisticRegression(C=51.79474679231202, class_weight=None, dual=False, fit_intercept=True, intercept_scaling=1, l1_ratio=None, max_iter=100, multi_class='ovr', n_jobs=1, penalty='l2', random_state=None, solver='lbfgs', tol=0.0001, verbose=0, warm_start=False))], verbose=False))], flatten_transform=None, weights=[0.125, 0.125, 0.125, 0.125, 0.125, 0.25, 0.125]))],
+         verbose=False)
+**
+
+A little hard to interpret, but it is a Voting classifier of XGboost and LightGBM, it has 0.9174 accuracy.
+
+
 ## Scikit-learn Pipeline
-**Explain the pipeline architecture, including data, hyperparameter tuning, and classification algorithm.**
 
 Essentially, the following steps have been performed:
 
@@ -76,13 +115,10 @@ Mathematical details of the LR algorithm can be found [here](https://medium.com/
 Additionally, we have added an inverse regularization parameter, **"C"**, ranging from 0.1 to 100 in steps of 10 to survey a vast range of possible values for inverse regularization strength.
 The other parameter that we have added was the **"max_iter"** as to be either 100, or 500 or 1000 to explore a vast number of maximum iterations for the LR algorithm to converge.
 
-**What are the benefits of the parameter sampler you chose?**
 
 We have chosen the RandomParameterSampling (Random Search), which in contrast to grid search (brute force search over all the parameters), not all parameter values are tried out, but rather a fixed number of parameter settings is sampled from the specified distributions [here](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html).
 The greatest benefit of the random search is that the best (or near to the best) parameters can be found in a fast way without looping over the whole model parameters.
 
-
-**What are the benefits of the early stopping policy you chose?**
 
 We use the Bandit Policy because it  is an early termination policy based on slack factor/slack amount and evaluation interval.
 The policy early terminates any runs where the primary metric is not within the specified slack factor/slack amount with respect to the best performing training run.
@@ -91,22 +127,64 @@ This can be justified, since slack factor is the slack allowed with respect to t
 Additionally, the **evaluation_interval**, the frequency for applying the Bandit policy, meaning that each time the training script logs the primary metric counts as one interval.
 
 ## AutoML
-**In 1-2 sentences, describe the model and hyperparameters generated by AutoML.**
+
+Following is the architecture of the pipeline found by automl.
+
+**
+Pipeline(memory=None,
+         steps=[('datatransformer',
+                 DataTransformer(enable_dnn=False, enable_feature_sweeping=True, 
+                 feature_sweeping_config={}, feature_sweeping_timeout=86400, 
+                 featurization_config=None, force_text_dnn=False, is_cross_validation=True, 
+                 is_onnx_compatible=False, observer=None, task='classification', 
+                 working_dir='/mnt/batch/tasks/shared/LS_root/mount...
+                 PreFittedSoftVotingClassifier(classification_labels=array([0, 1]), 
+                 estimators=[('0', Pipeline(memory=None, steps=[('maxabsscaler', MaxAbsScaler(copy=True)), 
+                 ('lightgbmclassifier', 
+                 LightGBMClassifier(min_data_in_leaf=20, n_jobs=1, problem_info=ProblemInfo(gpu_training_param_dict={'processing_unit_type': 'cpu'}), 
+                 random_state=None))], verbose=False)), 
+                 ('24', Pipeline(memory=None, steps=[('standardscalerwrapper', StandardScalerWrapper(copy=True, with_mean=False, with_std=False)), 
+                 ('xgboostclassifier', XGBoostClassifier(booster='gbtree', colsample_bytree=1, eta=0.05, gamma=0, max_depth=6, max_leaves=0, 
+                 n_estimators=200, n_jobs=1, objective='reg:logistic', problem_info=ProblemInfo(gpu_training_param_dict={'processing_unit_type': 'cpu'}), 
+                 random_state=0, reg_alpha=0.625, reg_lambda=0.8333333333333334, subsample=0.8, 
+                 tree_method='auto'))], verbose=False)), 
+                 ('1', Pipeline(memory=None, steps=[('maxabsscaler', MaxAbsScaler(copy=True)), 
+                 ('xgboostclassifier', XGBoostClassifier(n_jobs=1, problem_info=ProblemInfo(gpu_training_param_dict={'processing_unit_type': 'cpu'}), 
+                 random_state=0, tree_method='auto'))], verbose=False)), 
+                 ('21', Pipeline(memory=None, steps=[('standardscalerwrapper', StandardScalerWrapper(copy=True, with_mean=False, with_std=False)), 
+                 ('xgboostclassifier', XGBoostClassifier(booster='gbtree', colsample_bytree=0.5, eta=0.2, gamma=0, max_depth=7, max_leaves=7, 
+                 n_estimators=25, n_jobs=1, objective='reg:logistic', 
+                 problem_info=ProblemInfo(gpu_training_param_dict={'processing_unit_type': 'cpu'}), 
+                 random_state=0, reg_alpha=0, reg_lambda=0.20833333333333334, subsample=1, tree_method='auto'))], verbose=False)), 
+                 ('18', Pipeline(memory=None, steps=[('standardscalerwrapper', StandardScalerWrapper(copy=True, with_mean=False, with_std=False)), 
+                 ('xgboostclassifier', XGBoostClassifier(booster='gbtree', colsample_bytree=0.7, eta=0.1, gamma=0.1, 
+                 max_depth=9, max_leaves=511, n_estimators=25, n_jobs=1, objective='reg:logistic', problem_info=ProblemInfo(gpu_training_param_dict={'processing_unit_type': 'cpu'}), 
+                 random_state=0, reg_alpha=0, reg_lambda=1.7708333333333335, subsample=0.9, tree_method='auto'))], verbose=False)), 
+                 ('14', Pipeline(memory=None, steps=[('standardscalerwrapper', StandardScalerWrapper(copy=True, with_mean=False, with_std=False)), 
+                 ('xgboostclassifier', XGBoostClassifier(booster='gbtree', colsample_bytree=1, eta=0.3, gamma=0, max_depth=10, max_leaves=511, 
+                 n_estimators=10, n_jobs=1, objective='reg:logistic', problem_info=ProblemInfo(gpu_training_param_dict={'processing_unit_type': 'cpu'}), 
+                 random_state=0, reg_alpha=2.1875, reg_lambda=0.4166666666666667, subsample=0.5, tree_method='auto'))], verbose=False)), 
+                 ('16', Pipeline(memory=None, steps=[('standardscalerwrapper', StandardScalerWrapper(copy=True, with_mean=False, with_std=False)), 
+                 ('logisticregression', LogisticRegression(C=51.79474679231202, class_weight=None, dual=False, fit_intercept=True, intercept_scaling=1, l1_ratio=None, max_iter=100, multi_class='ovr', n_jobs=1, penalty='l2', random_state=None, solver='lbfgs', tol=0.0001, verbose=0, warm_start=False))], verbose=False))], flatten_transform=None, weights=[0.125, 0.125, 0.125, 0.125, 0.125, 0.25, 0.125]))],
+         verbose=False)
+**
+
+A "little" hard to interpret, but it is a Voting classifier of XGboost and LightGBM, it has 0.9174 accuracy.
+It has many steps of data rescaling strategies and data model ensembling.
+
 
 ## Pipeline comparison
-**Compare the two models and their performance. What are the differences in accuracy? In architecture? If there was a difference, why do you think there was one?**
+
+The best model with AutoML was **SoftVoting classifier with 0.9174 accuracy**, while the hyperdrive found a LR with the following best run metrics: {'Regularization Strength:': 0.1, 'Max iterations:': 100, 'Accuracy': 0.9111785533636824}.
+The accuracy of the AutoML model was found to be slightly better because of the fact that the LightGBM classifier can capture more complex than a simple LR.
+However, the LR provided a great result and the LR is a simple model, highly interpretable and the model would be light and easy to put into production. 
+The architecture found by AutoML is much more complex and it resembles ensemble models.
 
 ## Future work
-**What are some areas of improvement for future experiments? Why might these improvements help the model?**
 
 Future improvements of the current project could be:
 
 - Run the AutoML experiment for a much longer time;
-- perform different feature engineering and data cleaning strategies before training the model;
-- instead of just training a LR algorithm (in the train.py), use a greater variety of classification algorithms, such as KNN (K-Nearest Neighbors) and Decision Tree Classifiers;
+- perform different feature engineering and data cleaning strategies before training the model through hyperdrive;
+- instead of just training a LR algorithm in the hyperdrive (in the train.py), use a greater variety of classification algorithms, such as KNN (K-Nearest Neighbors) and Decision Tree Classifiers;
 - We could use a Bayesian Grid Search from AzureML to perform the hyperparameter tuning, and compare it to the Random Search in terms of efficiency and accuracy.
-
-## Proof of cluster clean up
-**If you did not delete your compute cluster in the code, please complete this section. 
-Otherwise, delete this section.**
-**Image of cluster marked for deletion**
